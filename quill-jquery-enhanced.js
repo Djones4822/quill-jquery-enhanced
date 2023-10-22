@@ -99,19 +99,26 @@ Quill.prototype.getHtml = function () {
     return converter.convert()
 };
 
-Quill.prototype.togglePreview = function () {
+const DEFAULT_EMPTY_PREVIEW_MESSAGE = "Nothing to see here..."
+
+Quill.prototype.togglePreview = function (options) {
     const quill = this
     const quillParent = quill.container.closest('.ql-parent')
     const quillWrapper = quill.container.closest('.ql-wrapper')
     const preview = $(quillParent).children('.ql-preview')
+    const showEmptyMessage = options?.showEmptyMessage || false
+    const emptyPreviewMessage = options?.emptyPreviewMessage !== undefined ? options.emptyMessagePreview : DEFAULT_EMPTY_PREVIEW_MESSAGE
 
     if (!$(preview).is(':visible')) {
         // update preview with delta from editor
-        const previewHtml = quill.getHtml()
+        const previewText = quill.getText()
         const delta = quill.getContents()
-        console.log(previewHtml)
-        console.log(delta)
-        $(preview).data('delta', delta).html(previewHtml)
+        if(!previewText.trim() && showEmptyMessage){
+            $(preview).data('delta', delta).html(`<p style='font-style: italic; color:gray'>${emptyPreviewMessage}</p>`)
+        }else{
+            const previewHtml = quill.getHtml()        
+            $(preview).data('delta', delta).html(previewHtml)    
+        }
     } else {
         // update editor with delta from preview
         const delta = $(preview).data('delta')
@@ -123,7 +130,13 @@ Quill.prototype.togglePreview = function () {
 
 !function ($) {
     /** Jquery function to easily set an element as a quill editor, optionally provide the quill options if needed */
-    $.fn.toQuill = function (editorOpts = DEFAULT_QUILL_OPTIONS) {
+    $.fn.toQuill = function (options={}) {
+        let showPreview = options['showPreview'] || false
+        let startingDelta = options['startingDelta'] || undefined
+        let editorOpts = options['editorOpts'] || DEFAULT_QUILL_OPTIONS
+        let showEmptyMessage = options['showEmptyMessage'] || false
+        let emptyPreviewMessage = options['emptyMessagePreview'] || undefined
+
         return this.each(function () {
             $(this).wrap(() => (
                 `<div class="ql-parent">
@@ -136,15 +149,20 @@ Quill.prototype.togglePreview = function () {
             
             // try to set 
             try {
-                let delta = JSON.parse($(this).text() || {})
+                let delta = typeof startingDelta === 'object' ? startingDelta : undefined
+                if(delta==undefined){
+                    delta = JSON.parse($(this).text()) || {}
+                }
                 if (delta) { quill.setContents(delta) }
             } catch (error){
                 console.log(error)
             }
             quill.showTooltips()
-
-            if (delta) { quill.setContents(delta) }
+            if(showPreview){
+                quill.togglePreview({showEmptyMessage: showEmptyMessage, emptyPreviewMessage: emptyPreviewMessage})
+            }
             $(this).data('quill', quill)  // store the editor in the quill data attr
+
         })
     }
     /** Jquery function to easily get the quill object from an element */

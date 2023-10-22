@@ -37,8 +37,9 @@ Make sure you have an import for quill and quill.snow.css in your project. Addit
 Then it can be called using:
 
 ```javascript
+const options = {}  // see below for options
 $(document).ready(()=>{
-    $('.quill-editor').toQuill()
+    $('.quill-editor').toQuill(options)
 })
 ```
 
@@ -60,4 +61,25 @@ will become:
         <div class='quill-editor ql-container ql-snow'>...</div>
     </div>
 </div>
+```
+
+Can optionally provide the following options to the `.toQuill()` method:
+
+```ts
+type IQuillOptions = {
+    editorOpts?: {} // any standard quill options, see quill documentation
+    showPreview?: boolean // whether to toggle immediately to preview on instantiation or not. default false
+    startingDelta?: JSON  // delta to set as the initial quill contents, alternatively set the json as the text of the element
+    showEmptyMessage?: boolean // whether to show the standard "Nothing to see here..." message when previewing an empty quill editor
+    emptyMessageText?: String  // string to show instead of the default empty preview message
+}
+```
+
+Optional parameters for `.togglePreview()` method:
+
+```ts
+type IPrevieToggleOptions = {
+    showEmptyMessage?: Boolean
+    emptyPreviewMessage?: String  // will be rendered in the following tag: <p style='font-style: italic; color:gray'></p>
+}
 ```
