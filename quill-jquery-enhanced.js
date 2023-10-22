@@ -132,8 +132,15 @@ Quill.prototype.togglePreview = function () {
                 </div>`
             ))
             $(this).closest('.ql-parent').prepend(`<div class='ql-preview' style='display:none'></div>`)
-            let delta = $(this).data('init-delta') || {}
             let quill = new Quill(this, editorOpts)
+            
+            // try to set 
+            try {
+                let delta = JSON.parse($(this).text() || {})
+                if (delta) { quill.setContents(delta) }
+            } catch (error){
+                console.log(error)
+            }
             quill.showTooltips()
 
             if (delta) { quill.setContents(delta) }
